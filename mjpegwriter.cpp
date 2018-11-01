@@ -1,11 +1,13 @@
-
+#include <stdlib.h>
+#include <memory.h>
+#include <stdio.h>
 #include "mjpegwriter.hpp"
-#include "opencv2/core/utility.hpp"
-#include <smmintrin.h>
+// #include "opencv2/core/utility.hpp"
+// #include <smmintrin.h>
 
 namespace jcodec{
 
-#define SSE 1
+#define SSE 0
 
 #define fourCC(a,b,c,d) ( (int) ((uchar(d)<<24) | (uchar(c)<<16) | (uchar(b)<<8) | uchar(a)) )
 #define DIM(arr) (sizeof(arr)/sizeof(arr[0]))
@@ -24,62 +26,62 @@ namespace jcodec{
     static const int MAX_BYTES_PER_SEC = 15552000;
     static const int SUG_BUFFER_SIZE = 1048576;
 
-    MjpegWriter::MjpegWriter() : isOpen(false), outFile(0), outformat(1), outfps(20),
-        FrameNum(0), quality(80), NumOfChunks(10) {}
+    MjpegWriter::MjpegWriter() : NumOfChunks(10), outFile(0), outformat(1), outfps(20),
+        quality(45),FrameNum(0), isOpen(false){}
 
-    int MjpegWriter::Open(char* outfile, uchar fps, Size ImSize)
-    {
-        tencoding = 0;
-        if (isOpen) return -4;
-        if (fps < 1) return -3;
-        if (!(outFile = fopen(outfile, "wb+")))
-            return -1;
-        outfps = fps;
-        width = ImSize.width;
-        height = ImSize.height;
+    // int MjpegWriter::Open(char* outfile, uchar fps, int w, int h)
+    // {
+    //     tencoding = 0;
+    //     if (isOpen) return -4;
+    //     if (fps < 1) return -3;
+    //     if (!(outFile = fopen(outfile, "wb+")))
+    //         return -1;
+    //     outfps = fps;
+    //     width = w;
+    //     height = h;
 
-        StartWriteAVI();
-        WriteStreamHeader();
+    //     StartWriteAVI();
+    //     WriteStreamHeader();
 
-        isOpen = true;
-        outfileName = outfile;
-        return 1;
-    }
+    //     isOpen = true;
+    //     outfileName = outfile;
+    //     return 1;
+    // }
 
-    int MjpegWriter::Close()
-    {
-        if (outFile == 0) return -1;
-        if (FrameNum == 0)
-        {
-            remove(outfileName);
-            isOpen = false;
-            if (fclose(outFile))
-                return -2;
-            return 1;
-        }
-        printf("encoding time per frame = %.1fms\n", tencoding * 1000 / FrameNum / getTickFrequency());
-        EndWriteChunk(); // end LIST 'movi'
-        WriteIndex();
-        FinishWriteAVI();
-        if (fclose(outFile))
-            return -1;
-        isOpen = false;
-        FrameNum = 0;
-        return 1;
-    }
+    // int MjpegWriter::Close()
+    // {
+    //     if (outFile == 0) return -1;
+    //     if (FrameNum == 0)
+    //     {
+    //         remove(outfileName);
+    //         isOpen = false;
+    //         if (fclose(outFile))
+    //             return -2;
+    //         return 1;
+    //     }
+    //     // printf("encoding time per frame = %.1fms\n", tencoding * 1000 / FrameNum / getTickFrequency());
+    //     EndWriteChunk(); // end LIST 'movi'
+    //     WriteIndex();
+    //     FinishWriteAVI();
+    //     if (fclose(outFile))
+    //         return -1;
+    //     isOpen = false;
+    //     FrameNum = 0;
+    //     return 1;
+    // }
 
-    int MjpegWriter::Write(const Mat & Im)
-    {
-        if (!isOpen) return -1;
-        if(!WriteFrame(Im))
-            return -2;
-        return 1;
-    }
+    // int MjpegWriter::Write(const Mat & Im)
+    // {
+    //     if (!isOpen) return -1;
+    //     if(!WriteFrame(Im))
+    //         return -2;
+    //     return 1;
+    // }
 
-    bool MjpegWriter::isOpened()
-    {
-        return isOpen;
-    }
+    // bool MjpegWriter::isOpened()
+    // {
+    //     return isOpen;
+    // }
 
     void MjpegWriter::StartWriteAVI()
     {
@@ -169,25 +171,25 @@ namespace jcodec{
         PutInt(fourCC('m', 'o', 'v', 'i'));
     }
     
-    bool MjpegWriter::WriteFrame(const Mat & Im)
-    {
-        chunkPointer = ftell(outFile);
-        StartWriteChunk(fourCC('0', '0', 'd', 'c'));
-        // Frame data
-        void *pBuf = 0;
-        int pBufSize;
-        double t = (double)getTickCount();
-        if ((pBufSize = toJPGframe(Im.data, width, height, 12, pBuf)) < 0)
-            return false;
-        tencoding += (double)getTickCount() - t;
-        fwrite(pBuf, pBufSize, 1, outFile);
-        FrameOffset.push_back(chunkPointer - moviPointer);
-        FrameSize.push_back(ftell(outFile) - chunkPointer - 8);       // Size excludes '00dc' and size field
-        FrameNum++;
-        EndWriteChunk(); // end '00dc'
-        free(pBuf);
-        return true;
-    }
+    // bool MjpegWriter::WriteFrame(const Mat & Im)
+    // {
+    //     chunkPointer = ftell(outFile);
+    //     StartWriteChunk(fourCC('0', '0', 'd', 'c'));
+    //     // Frame data
+    //     void *pBuf = 0;
+    //     int pBufSize;
+    //     double t = (double)getTickCount();
+    //     if ((pBufSize = toJPGframe(Im.data, width, height, 12, pBuf)) < 0)
+    //         return false;
+    //     tencoding += (double)getTickCount() - t;
+    //     fwrite(pBuf, pBufSize, 1, outFile);
+    //     FrameOffset.push_back(chunkPointer - moviPointer);
+    //     FrameSize.push_back(ftell(outFile) - chunkPointer - 8);       // Size excludes '00dc' and size field
+    //     FrameNum++;
+    //     EndWriteChunk(); // end '00dc'
+    //     free(pBuf);
+    //     return true;
+    // }
 
     void MjpegWriter::WriteIndex()
     {
@@ -269,7 +271,7 @@ namespace jcodec{
 
     int MjpegWriter::toJPGframe(const uchar * data, uint width, uint height, int step, void *& pBuf)
     {
-        const int req_comps = 3; // request BGR image, if (BGRA) req_comps = 4; 
+        const int req_comps = 1; // request BGR image, if (BGRA) req_comps = 4; 
         params param;
         param.m_quality = quality;
         param.m_subsampling = H2V2;
@@ -342,14 +344,14 @@ namespace jcodec{
 
         static void BGR_to_YCC(uchar *pDstY, uchar *pDstCb, uchar *pDstCr, const uchar *pSrc, int num_pixels)
         {
+            int x = 0;
+#if SSE
             __m128i m0 = _mm_setr_epi16(0, m00, m01, m02, m00, m01, m02, 0);
             __m128i m1 = _mm_setr_epi16(0, m10, m11, m12, m10, m11, m12, 0);
             __m128i m2 = _mm_setr_epi16(0, m20, m21, m22, m20, m21, m22, 0);
             __m128i m3 = _mm_setr_epi32(m03, m13, m23, 0);
             __m128i z = _mm_setzero_si128(), t0, t1, t2, r0, r1, v0, v1, v2, v3;
-            int x = 0;
 
-#if SSE
             for (; x <= (num_pixels - 8) * 3; x += 8 * 3, pDstCr += 8, pDstCb += 8, pDstY += 8)
             {
                 v0 = _mm_loadl_epi64((const __m128i*)(pSrc + x));
@@ -996,14 +998,17 @@ namespace jcodec{
             //if (m_image_bpp == 4)
             //    RGBA_to_YCC(pDst, Psrc, m_image_x);
             //else
-            if (m_image_bpp == 3)
-                BGR_to_YCC(pDstY, pDstCb, pDstCr, Psrc, m_image_x);
+            // if (m_image_bpp == 3)
+            //     BGR_to_YCC(pDstY, pDstCb, pDstCr, Psrc, m_image_x);
+            memcpy(pDstY,Psrc,m_image_x);
+            memset(pDstCb,128,m_image_x);
+            memset(pDstCr,128,m_image_x);
 
             // Possibly duplicate pixels at end of scanline if not a multiple of 8 or 16
             const uchar y = pDstY[m_image_x], cb = pDstCb[m_image_x], cr = pDstCr[m_image_x];
             uchar *Y = m_mcu_linesY[m_mcu_y_ofs] + m_image_x;
-            uchar *Cb = m_mcu_linesY[m_mcu_y_ofs] + m_image_x;
-            uchar *Cr = m_mcu_linesY[m_mcu_y_ofs] + m_image_x;
+            uchar *Cb = m_mcu_linesCb[m_mcu_y_ofs] + m_image_x;
+            uchar *Cr = m_mcu_linesCr[m_mcu_y_ofs] + m_image_x;
             for (int i = m_image_x; i < m_image_x_mcu; i++)
             {
                 *Y++ = y; *Cb++ = cb; *Cr++ = cr;

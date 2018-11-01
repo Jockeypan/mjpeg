@@ -1,7 +1,12 @@
-#include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
+// #include <opencv2/imgproc.hpp>
+// #include <opencv2/highgui.hpp>
 
-using namespace cv;
+// using namespace cv;
+#include <sys/types.h>
+#include <unistd.h>
+#include <iostream>
+#include <vector>
+typedef unsigned char uchar;
 using namespace std;
 
 namespace jcodec
@@ -19,7 +24,7 @@ namespace jcodec
 
     struct params
     {
-        inline params() : m_quality(85), m_subsampling(H2V2), m_no_chroma_discrim_flag(false), m_two_pass_flag(false), block_size(16) { }
+        inline params() : m_quality(35), m_subsampling(H2V2), m_no_chroma_discrim_flag(false), m_two_pass_flag(false), block_size(16) { }
 
         inline bool check() const
         {
@@ -49,10 +54,11 @@ namespace jcodec
     {
     public:
         MjpegWriter();
-        int Open(char* outfile, uchar fps, Size ImSize);
-        int Write(const Mat &Im);
-        int Close();
-        bool isOpened();
+        // int Open(char* outfile, uchar fps, int w, int h);
+        // int Write(const Mat &Im);
+        // int Close();
+        // bool isOpened();
+        int toJPGframe(const uchar * data, uint width, uint height, int step, void *& pBuf);
     private:
         const int NumOfChunks;
         double tencoding;
@@ -64,11 +70,10 @@ namespace jcodec
         vector<int> FrameOffset, FrameSize, AVIChunkSizeIndex, FrameNumIndexes;
         bool isOpen;
 
-        int toJPGframe(const uchar * data, uint width, uint height, int step, void *& pBuf);
         void StartWriteAVI();
         void WriteStreamHeader();
         void WriteIndex();
-        bool WriteFrame(const Mat & Im);
+        // bool WriteFrame(const Mat & Im);
         void WriteODMLIndex();
         void FinishWriteAVI();
         void PutInt(int elem);

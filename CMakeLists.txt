@@ -12,21 +12,21 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 
 set(the_target "jcodec")
 
-file(GLOB srcs RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
+# file(GLOB srcs RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.cpp)
 
-file(GLOB hdrs RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.hpp)
+# file(GLOB hdrs RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.hpp)
 
-add_executable(${the_target} ${srcs} ${hdrs})
+add_executable(${the_target} Main.cpp mjpegwriter.cpp)
 
 target_link_libraries(${the_target} ${OpenCV_LIBS})
 
 
 
-if(MSVC)
+# if(MSVC)
 
-       set_target_properties(${the_target} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:atlthunk.lib /NODEFAULTLIB:atlsd.lib /DEBUG")
+#        set_target_properties(${the_target} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:atlthunk.lib /NODEFAULTLIB:atlsd.lib /DEBUG")
 
-endif()
+# endif()
 
 
 
