@@ -68,6 +68,11 @@ void start_udp_stream(const char *addr,Data_t mjpeg_data)
     while(send_count < len) {
         need_send = send_count+ udp_mtu >len? len - send_count : udp_mtu;
         one_send = sendto(udp_fd, udp_buf + send_count, need_send, 0, (const struct sockaddr*)&dest_addr, sizeof(dest_addr));
+        if(one_send<0)
+        {
+            printf("send data error\n");
+            return;
+        }
         send_count += one_send;
     }
     if(++capture_images_count % 100 == 0)
@@ -126,11 +131,12 @@ int main(int, char**)
     Rect rect(0, 0, 640, 480);
     // Mat frame(rect.size(), CV_8UC3);
     Mat frame;
+    cap >> frame;
     int nframes = 0;
     Data_t tmjpg;
-    memcpy(addr, "192.168.1.101", sizeof("192.168.1.101"));
+    memcpy(addr, "127.0.0.1", sizeof("127.0.0.1"));
 #if TEST_MY
-    // j->Open("out.avi", (uchar)10, frame.cols, frame.rows);
+    j->Open("out.avi", (uchar)30, frame.cols, frame.rows);
 #else
     outputVideo.open("out2.avi", outputVideo.fourcc('M', 'J', 'P', 'G'), 10.0, img.size(), true);
 #endif
@@ -164,8 +170,9 @@ int main(int, char**)
         // double tstart = (double)getTickCount();
 
 #if TEST_MY
-        // j->Write(gray);
+        // 
         tmjpg.length=j->toJPGframe(gray.data,gray.cols,gray.rows,12,tmjpg.start);
+        j->Write((const uchar*)tmjpg.start,tmjpg.length);
         // tmjpg.length=j->toJPGframe(pbuf,640,480,12,tmjpg.start);
         start_udp_stream(addr,tmjpg);
         free(tmjpg.start);
@@ -177,7 +184,7 @@ int main(int, char**)
 	}
 
 #if TEST_MY
-    // j->Close();
+    j->Close();
 #else
     outputVideo.release();
 #endif

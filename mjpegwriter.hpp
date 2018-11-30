@@ -1,7 +1,3 @@
-// #include <opencv2/imgproc.hpp>
-// #include <opencv2/highgui.hpp>
-
-// using namespace cv;
 #include <sys/types.h>
 #include <unistd.h>
 #include <iostream>
@@ -54,10 +50,10 @@ namespace jcodec
     {
     public:
         MjpegWriter();
-        // int Open(char* outfile, uchar fps, int w, int h);
-        // int Write(const Mat &Im);
-        // int Close();
-        // bool isOpened();
+        int Open(char* outfile, uchar fps, int w, int h);
+        int Write(const uchar * imdata, int len);
+        int Close();
+        bool isOpened();
         int toJPGframe(const uchar * data, uint width, uint height, int step, void *& pBuf);
     private:
         const int NumOfChunks;
@@ -73,7 +69,7 @@ namespace jcodec
         void StartWriteAVI();
         void WriteStreamHeader();
         void WriteIndex();
-        // bool WriteFrame(const Mat & Im);
+        bool WriteFrame(const uchar * imdata, int len);
         void WriteODMLIndex();
         void FinishWriteAVI();
         void PutInt(int elem);

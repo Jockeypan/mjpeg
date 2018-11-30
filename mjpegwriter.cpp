@@ -27,61 +27,61 @@ namespace jcodec{
     static const int SUG_BUFFER_SIZE = 1048576;
 
     MjpegWriter::MjpegWriter() : NumOfChunks(10), outFile(0), outformat(1), outfps(20),
-        quality(45),FrameNum(0), isOpen(false){}
+        quality(35),FrameNum(0), isOpen(false){}
 
-    // int MjpegWriter::Open(char* outfile, uchar fps, int w, int h)
-    // {
-    //     tencoding = 0;
-    //     if (isOpen) return -4;
-    //     if (fps < 1) return -3;
-    //     if (!(outFile = fopen(outfile, "wb+")))
-    //         return -1;
-    //     outfps = fps;
-    //     width = w;
-    //     height = h;
+    int MjpegWriter::Open(char* outfile, uchar fps, int w, int h)
+    {
+        tencoding = 0;
+        if (isOpen) return -4;
+        if (fps < 1) return -3;
+        if (!(outFile = fopen(outfile, "wb+")))
+            return -1;
+        outfps = fps;
+        width = w;
+        height = h;
 
-    //     StartWriteAVI();
-    //     WriteStreamHeader();
+        StartWriteAVI();
+        WriteStreamHeader();
 
-    //     isOpen = true;
-    //     outfileName = outfile;
-    //     return 1;
-    // }
+        isOpen = true;
+        outfileName = outfile;
+        return 1;
+    }
 
-    // int MjpegWriter::Close()
-    // {
-    //     if (outFile == 0) return -1;
-    //     if (FrameNum == 0)
-    //     {
-    //         remove(outfileName);
-    //         isOpen = false;
-    //         if (fclose(outFile))
-    //             return -2;
-    //         return 1;
-    //     }
-    //     // printf("encoding time per frame = %.1fms\n", tencoding * 1000 / FrameNum / getTickFrequency());
-    //     EndWriteChunk(); // end LIST 'movi'
-    //     WriteIndex();
-    //     FinishWriteAVI();
-    //     if (fclose(outFile))
-    //         return -1;
-    //     isOpen = false;
-    //     FrameNum = 0;
-    //     return 1;
-    // }
+    int MjpegWriter::Close()
+    {
+        if (outFile == 0) return -1;
+        if (FrameNum == 0)
+        {
+            remove(outfileName);
+            isOpen = false;
+            if (fclose(outFile))
+                return -2;
+            return 1;
+        }
+        // printf("encoding time per frame = %.1fms\n", tencoding * 1000 / FrameNum / getTickFrequency());
+        EndWriteChunk(); // end LIST 'movi'
+        WriteIndex();
+        FinishWriteAVI();
+        if (fclose(outFile))
+            return -1;
+        isOpen = false;
+        FrameNum = 0;
+        return 1;
+    }
 
-    // int MjpegWriter::Write(const Mat & Im)
-    // {
-    //     if (!isOpen) return -1;
-    //     if(!WriteFrame(Im))
-    //         return -2;
-    //     return 1;
-    // }
+    int MjpegWriter::Write(const uchar * imdata, int len)
+    {
+        if (!isOpen) return -1;
+        if(!WriteFrame(imdata, len))
+            return -2;
+        return 1;
+    }
 
-    // bool MjpegWriter::isOpened()
-    // {
-    //     return isOpen;
-    // }
+    bool MjpegWriter::isOpened()
+    {
+        return isOpen;
+    }
 
     void MjpegWriter::StartWriteAVI()
     {
@@ -171,25 +171,25 @@ namespace jcodec{
         PutInt(fourCC('m', 'o', 'v', 'i'));
     }
     
-    // bool MjpegWriter::WriteFrame(const Mat & Im)
-    // {
-    //     chunkPointer = ftell(outFile);
-    //     StartWriteChunk(fourCC('0', '0', 'd', 'c'));
-    //     // Frame data
-    //     void *pBuf = 0;
-    //     int pBufSize;
-    //     double t = (double)getTickCount();
-    //     if ((pBufSize = toJPGframe(Im.data, width, height, 12, pBuf)) < 0)
-    //         return false;
-    //     tencoding += (double)getTickCount() - t;
-    //     fwrite(pBuf, pBufSize, 1, outFile);
-    //     FrameOffset.push_back(chunkPointer - moviPointer);
-    //     FrameSize.push_back(ftell(outFile) - chunkPointer - 8);       // Size excludes '00dc' and size field
-    //     FrameNum++;
-    //     EndWriteChunk(); // end '00dc'
-    //     free(pBuf);
-    //     return true;
-    // }
+    bool MjpegWriter::WriteFrame(const uchar * imdata, int len)
+    {
+        chunkPointer = ftell(outFile);
+        StartWriteChunk(fourCC('0', '0', 'd', 'c'));
+        // Frame data
+        void *pBuf = (void *)imdata;
+        int pBufSize = len;
+        // double t = (double)getTickCount();
+        // if ((pBufSize = toJPGframe(Im.data, width, height, 12, pBuf)) < 0)
+        //     return false;
+        // tencoding += (double)getTickCount() - t;
+        fwrite(pBuf, pBufSize, 1, outFile);
+        FrameOffset.push_back(chunkPointer - moviPointer);
+        FrameSize.push_back(ftell(outFile) - chunkPointer - 8);       // Size excludes '00dc' and size field
+        FrameNum++;
+        EndWriteChunk(); // end '00dc'
+        // free(pBuf);
+        return true;
+    }
 
     void MjpegWriter::WriteIndex()
     {

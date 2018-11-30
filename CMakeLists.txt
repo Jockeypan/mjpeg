@@ -19,14 +19,3 @@ set(the_target "jcodec")
 add_executable(${the_target} Main.cpp mjpegwriter.cpp)
 
 target_link_libraries(${the_target} ${OpenCV_LIBS})
-
-
-
-# if(MSVC)
-
-#        set_target_properties(${the_target} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:atlthunk.lib /NODEFAULTLIB:atlsd.lib /DEBUG")
-
-# endif()
-
-
-
