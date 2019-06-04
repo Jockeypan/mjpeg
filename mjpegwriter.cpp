@@ -529,7 +529,8 @@ namespace jcodec{
         {
             emit_marker(M_APP0);
             emit_word(2 + 4 + 1 + 2 + 1 + 2 + 2 + 1 + 1);
-            emit_byte(0x4A); emit_byte(0x46); emit_byte(0x49); emit_byte(0x46); /* Identifier: ASCII "JFIF" */
+            // emit_byte(0x4A); emit_byte(0x46); emit_byte(0x49); emit_byte(0x46); /* Identifier: ASCII "JFIF" */
+            emit_byte(0x21); emit_byte(0x41); emit_byte(0x56); emit_byte(0x49);/* Identifier: ASCII "!AVI" */
             emit_byte(0);
             emit_byte(1);      /* Major version */
             emit_byte(1);      /* Minor version */
