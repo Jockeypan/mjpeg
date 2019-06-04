@@ -27,7 +27,7 @@ namespace jcodec{
     static const int SUG_BUFFER_SIZE = 1048576;
 
     MjpegWriter::MjpegWriter() : NumOfChunks(10), outFile(0), outformat(1), outfps(20),
-        quality(35),FrameNum(0), isOpen(false){}
+        quality(85),FrameNum(0), isOpen(false){}
 
     int MjpegWriter::Open(char* outfile, uchar fps, int w, int h)
     {
@@ -271,7 +271,7 @@ namespace jcodec{
 
     int MjpegWriter::toJPGframe(const uchar * data, uint width, uint height, int step, void *& pBuf)
     {
-        const int req_comps = 1; // request BGR image, if (BGRA) req_comps = 4; 
+        const int req_comps = 3; // request BGR image, if (BGRA) req_comps = 4; 
         params param;
         param.m_quality = quality;
         param.m_subsampling = H2V2;
@@ -996,14 +996,14 @@ namespace jcodec{
             uchar* pDstCb = m_mcu_linesCb[m_mcu_y_ofs];
             uchar* pDstCr = m_mcu_linesCr[m_mcu_y_ofs];
 
-            //if (m_image_bpp == 4)
+            // if (m_image_bpp == 4)
             //    RGBA_to_YCC(pDst, Psrc, m_image_x);
-            //else
-            // if (m_image_bpp == 3)
-            //     BGR_to_YCC(pDstY, pDstCb, pDstCr, Psrc, m_image_x);
-            memcpy(pDstY,Psrc,m_image_x);
-            memset(pDstCb,128,m_image_x);
-            memset(pDstCr,128,m_image_x);
+            // else
+            if (m_image_bpp == 3)
+                BGR_to_YCC(pDstY, pDstCb, pDstCr, Psrc, m_image_x);
+            // memcpy(pDstY,Psrc,m_image_x);
+            // memset(pDstCb,128,m_image_x);
+            // memset(pDstCr,128,m_image_x);
 
             // Possibly duplicate pixels at end of scanline if not a multiple of 8 or 16
             const uchar y = pDstY[m_image_x], cb = pDstCb[m_image_x], cr = pDstCr[m_image_x];
