@@ -122,7 +122,7 @@ int read_mipi_raw(const char* fname, unsigned char*& pbuf)
 
 int main(int, char**)
 {
-    VideoCapture cap("2018-08-27-22-27-58.avi");
+    VideoCapture cap("2018-07-11-10-27-54.avi");
     jcodec::MjpegWriter * j = new jcodec::MjpegWriter();
     VideoWriter outputVideo;
     double ttotal = 0;
@@ -170,10 +170,10 @@ int main(int, char**)
         // double tstart = (double)getTickCount();
 
 #if TEST_MY
-        // 
-        tmjpg.length=j->toJPGframe(gray.data,gray.cols,gray.rows,12,tmjpg.start);
+        tmjpg.length = j->toJPGframe(frame.data, frame.cols, frame.rows, 12, tmjpg.start);
+        // tmjpg.length = j->toJPGframe(gray.data, gray.cols, gray.rows, 12, tmjpg.start);
         j->Write((const uchar*)tmjpg.start,tmjpg.length);
-        // tmjpg.length=j->toJPGframe(pbuf,640,480,12,tmjpg.start);
+
         start_udp_stream(addr,tmjpg);
         free(tmjpg.start);
 #else
